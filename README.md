@@ -1,8 +1,6 @@
-# Arquitectura de la Aplicación
-
 ## Descripción General
 
-La aplicación se basa en un modelo **cliente-servidor** y está diseñada para permitir la colaboración en tiempo real entre un profesor y los estudiantes dentro de un aula. El profesor controla la edición del código, mientras que los estudiantes pueden observar los cambios reflejados de manera inmediata en sus pantallas.
+La aplicación se basa en un modelo **cliente-servidor** y está diseñada para permitir la colaboración en tiempo real entre un profesor y los estudiantes dentro de un aula. El profesor controla la edición del código y la asignación del usuario con permisos de escritura, mientras que los estudiantes (siempre y cuando no tengan asignado dicho permiso) únicamente pueden observar los cambios reflejados de manera inmediata en sus pantallas.
 
 ---
 
@@ -64,7 +62,7 @@ El servidor no almacena información de manera persistente.
 ## Esquema de la Arquitectura
 
 ```text
-[Cliente: Profesor]   <--->   [Servidor Node.js + Socket.IO]   <--->   [Cliente: Estudiantes]
+[Cliente: Profesor]   <===>   [Servidor Node.js + Socket.IO]   <===>   [Cliente: Estudiantes]
 ```
 
 - El cliente del profesor y los clientes de los estudiantes se comunican con el servidor en tiempo real.
