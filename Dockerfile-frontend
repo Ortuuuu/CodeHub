@@ -1,0 +1,12 @@
+FROM node:18-slim
+
+WORKDIR /app
+
+COPY frontend/. .
+
+RUN npm install -g serve
+
+EXPOSE 80
+
+# Usamos -s . para servir un frontal SPA y -l 80 para escuchar en el puerto 80
+CMD ["serve", "-s", ".", "-l", "80"]
