@@ -1,0 +1,23 @@
+# Dependencias de Node
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Variables de entorno
+.env
+
+# Archivos del sistema
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Docker
+*.pid
+*.seed
+*.bak
+*.swp
+
+# Config de VSCode
+.vscode/
