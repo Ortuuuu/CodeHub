@@ -21,11 +21,22 @@ const participants = {};    // Objeto: [socket.id] -> { name, role, hasPermissio
 const TEACHER_KEY = "clave-de-profesor"; // SOLO PARA EL PROTOTIPO, HAY QUE REFINAR ESTO
 let teacherSocketId = null; // Se guardara el id del profesor para que solo haya uno
 
+function connectionTimeout(socket) {
+    // Para evitar inconsistencias eliminamos conexiones que no se hayan autenticado en 20 segundos
+    setTimeout(() => {
+        if (!participants[socket.id]) {
+            console.log(`Eliminando conexión no autenticada: ${socket.id}`);
+            socket.disconnect(true);
+        }
+    }, 20000);
+};
 
 io.on('connection', (socket) => {
     console.log(`Nueva conexión: ${socket.id}`);
+    connectionTimeout(socket);
 
     socket.on('joinRoom', ({ name, teacherKey }) => {
+        clearTimeout(connectionTimeout);
         // En primer lugar asignamos un rol al usuario
         const isTeacher = (teacherKey !== '' && teacherKey === TEACHER_KEY);
         const role = isTeacher ? 'profesor' : 'estudiante';
@@ -80,11 +91,17 @@ io.on('connection', (socket) => {
     });
 
     socket.on('disconnect', () => {
+        // VULNERABILIDAD
+        const user = participants[socket.id];
+        if (!user) {
+            return console.log("Cliente inconsistente desconectado, no estaba en la lista de participantes.");
+        }
+
         console.log(`Cliente ${socket.id} desconectado. (Nombre: ${participants[socket.id].name})`);
 
         // Si se desconecta el profesor, reseteamos el id
         if (socket.id === teacherSocketId) {
-            teacherSocketId =
+            teacherSocketId = undefined;
             console.log("El usuario que se ha desconectado era el profesor.");
         }
 

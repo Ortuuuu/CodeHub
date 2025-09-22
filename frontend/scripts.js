@@ -21,14 +21,47 @@ function updateParticipantsUI(students) {
 
 // Solicitud de conexión a la sala
 document.getElementById('joinBtn').onclick = () => {
+  console.log("Intentando unirse a la sala...");
+
   const name = document.getElementById('nameInput').value;
   const teacherKey = document.getElementById('teacherKeyInput').value;
 
   if (!name) return alert("Por favor, introduce tu nombre");
 
   socket.emit('joinRoom', { name: name, teacherKey: teacherKey });
+
+  // Guardamos el nombre y la clave en sessionStorage (pestaña actual) para reintentar la unión en caso de reconexión
+  sessionStorage.setItem('name', name);
+  sessionStorage.setItem('teacherKey', teacherKey);
 };
 
+// Conexión o reconexión al servidor
+socket.on('connect', () => {
+
+  // Si la conexión procede de una reconexión, reintentamos unirnos a la sala
+  const name = sessionStorage.getItem('name');
+  const teacherKey = sessionStorage.getItem('teacherKey');
+
+  if (name) {
+    console.log(`Reconectado al servidor con id: ${socket.id}`);
+    socket.emit('joinRoom', { name: name, teacherKey: teacherKey });
+  }
+  else   console.log(`Conectado al servidor con id: ${socket.id}`);
+});
+
+// Desconexion del servidor
+socket.on('disconnect', () => {
+    // Si nos hemos desconectado, refrescamos la pestaña en caso de que siga abierta, mostramos el menu de login y ocultamos el editor y el menu de participantes
+    if (document.visibilityState === 'visible') {
+        location.reload();
+    }
+    
+    document.getElementById('loginMenu').classList.remove('hidden');
+    document.getElementById('participantsMenu').classList.add('hidden');
+    document.getElementById('editorContainer').classList.add('hidden');
+    document.getElementById('codeEditor').disabled = true;
+    console.log("Desconectado del servidor. Intentando reconectar...");
+});
 
 // Recepción de confirmación de unión a la sala por parte del servidor. La data tendrá el foramto { role: 'profesor'/'estudiante', participants: [...] }, o bien el formato { error: "mensaje de error" } si hubo un problema
 socket.on('joined', data => {
@@ -79,7 +112,6 @@ document.getElementById('revokeAllBtn').onclick = () => {
 
 // Cuando el profesor le da permisos a un estudiante (clicandolo en el menu de participantes)
 document.getElementById('participantsList').onclick = (event) => {
-  console.log("Click en la lista de participantes");
   if (event.target && event.target.tagName === 'LI') {
     const studentId = event.target.dataset.id;
     const currentlyHasPermission = event.target.classList.contains('has-permission');

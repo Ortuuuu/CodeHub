@@ -80,6 +80,4 @@ Arquitectura simple, pensada para ser extendida:
 Persistencia con base de datos.
 
 Autenticación real y gestión segura de credenciales.
-
-Despliegue escalable con Docker y Docker Compose.
 ```
