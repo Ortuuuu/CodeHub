@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
@@ -18,7 +19,7 @@ server.listen(PORT, () => {
 });
 
 const participants = {};    // Objeto: [socket.id] -> { name, role, hasPermission }
-const TEACHER_KEY = "clave-de-profesor"; // SOLO PARA EL PROTOTIPO, HAY QUE REFINAR ESTO
+const TEACHER_KEY = process.env.TEACHER_KEY;
 let teacherSocketId = null; // Se guardara el id del profesor para que solo haya uno
 
 function connectionTimeout(socket) {
