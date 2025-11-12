@@ -22,6 +22,21 @@ const participants = {};    // Objeto: [socket.id] -> { name, role, hasPermissio
 const TEACHER_KEY = process.env.TEACHER_KEY;
 let teacherSocketId = null; // Se guardara el id del profesor para que solo haya uno
 
+function getStudentsList() {
+    const studentsList = [];
+    for (let id in participants) {
+        const client = participants[id];
+        if (client.role === 'estudiante') {
+            studentsList.push({ 
+                id: id, 
+                name: client.name, 
+                hasPermission: client.hasPermission 
+            });
+        }
+    }
+    return studentsList;
+}
+
 io.on('connection', (socket) => {
     console.log(`Nueva conexión: ${socket.id}`);
 
@@ -54,28 +69,13 @@ io.on('connection', (socket) => {
         const personalData = { role: role };
 
         if (role === 'profesor') {
-            const currentParticipants = [];
-
-            for (let id in participants) {
-                const client = participants[id];
-                // Solo añadimos a los estudiantes en la lista
-                if(client.role === 'estudiante') currentParticipants.push({ id: id, name: client.name, hasPermission: client.hasPermission });
-            }
-
-            personalData.participants = currentParticipants;
+            personalData.participants = getStudentsList();
         }
         socket.emit('joined', personalData);
 
         // Acutalizamos la lista del profesor
         if (role === 'estudiante' && teacherSocketId) {
-            let currentParticipants = [];
-
-             for (const id in participants) {
-                const client = participants[id];
-                if (client.role === 'estudiante') currentParticipants.push({ id: id, name: client.name, hasPermission: client.hasPermission });
-            }
-
-            io.to(teacherSocketId).emit('updateParticipants', currentParticipants); 
+            io.to(teacherSocketId).emit('updateParticipants', getStudentsList()); 
         }
     });
 
@@ -98,12 +98,7 @@ io.on('connection', (socket) => {
 
         // Actualizamos la lista del profesor
         if (teacherSocketId) {
-            const currentParticipants = [];
-            for (let id in participants) {
-                const client = participants[id];
-                if (client.role === 'estudiante') currentParticipants.push({ id: id, name: client.name, hasPermission: client.hasPermission});
-            }
-            io.to(teacherSocketId).emit('updateParticipants', currentParticipants);
+            io.to(teacherSocketId).emit('updateParticipants', getStudentsList());
         }        
     });
 
@@ -128,12 +123,7 @@ io.on('connection', (socket) => {
 
             // Actualizamos la lista del profesor
             if (teacherSocketId) {
-                const currentParticipants = [];
-                for (let id in participants) {
-                    const client = participants[id];
-                    if (client.role === 'estudiante') currentParticipants.push({ id: id, name: client.name, hasPermission: client.hasPermission});
-                }
-                io.to(teacherSocketId).emit('updateParticipants', currentParticipants);
+                io.to(teacherSocketId).emit('updateParticipants', getStudentsList());
             }        
         }
         else {
