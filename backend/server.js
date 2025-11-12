@@ -43,6 +43,20 @@ function syncTeacherUI() {
     }
 }
 
+function toggleAllStudentsPermissions(give) {
+    for (let id in participants) {
+        if (participants[id].role === 'estudiante') {
+            participants[id].hasPermission = give;
+            io.to(id).emit('permissionChanged', give);
+        }
+    }
+}
+
+function toggleStudentPermission(studentId, give) {
+    participants[studentId].hasPermission = give;
+    io.to(studentId).emit('permissionChanged', give);
+}
+
 io.on('connection', (socket) => {
     console.log(`Nueva conexión: ${socket.id}`);
 
@@ -64,8 +78,7 @@ io.on('connection', (socket) => {
         }
 
         // Se establecen los permisos iniciales
-        let hasPermission = false;
-        if (role === 'profesor') hasPermission = true;
+        const hasPermission = (role === 'profesor');
 
         // Guardamos la info del usuario en la lista de participantes 
         participants[socket.id] = { name, role, hasPermission };
@@ -118,20 +131,12 @@ io.on('connection', (socket) => {
         else if (target === teacherSocketId) return console.log("El profesor no puede cambiar sus propios permisos.");
         else if (target === 'all') {
             console.log("El profesor le ha quitado los permisos a todos los estudiantes.");
-            for (let id in participants) {
-                if (participants[id].role === 'estudiante') {
-                    participants[id].hasPermission = give;
-                    io.to(id).emit('permissionChanged', give);
-                }
-            }
-
-            // Actualizamos la lista del profesor
+            toggleAllStudentsPermissions(give);
             syncTeacherUI();
         }
         else {
             console.log(`El profesor le ha ${give ? 'dado' : 'quitado'} los permisos al estudiante ${participants[target].name}.`);
-            participants[target].hasPermission = give;
-            io.to(target).emit('permissionChanged', give);
+            toggleStudentPermission(target, give);
         }
 
     });
