@@ -37,6 +37,12 @@ function getStudentsList() {
     return studentsList;
 }
 
+function syncTeacherUI() {
+    if (teacherSocketId) {
+        io.to(teacherSocketId).emit('updateParticipants', getStudentsList());
+    }
+}
+
 io.on('connection', (socket) => {
     console.log(`Nueva conexión: ${socket.id}`);
 
@@ -74,8 +80,8 @@ io.on('connection', (socket) => {
         socket.emit('joined', personalData);
 
         // Acutalizamos la lista del profesor
-        if (role === 'estudiante' && teacherSocketId) {
-            io.to(teacherSocketId).emit('updateParticipants', getStudentsList()); 
+        if (role === 'estudiante') {
+            syncTeacherUI();
         }
     });
 
@@ -97,9 +103,7 @@ io.on('connection', (socket) => {
         delete participants[socket.id];
 
         // Actualizamos la lista del profesor
-        if (teacherSocketId) {
-            io.to(teacherSocketId).emit('updateParticipants', getStudentsList());
-        }        
+        syncTeacherUI();
     });
 
     
@@ -122,9 +126,7 @@ io.on('connection', (socket) => {
             }
 
             // Actualizamos la lista del profesor
-            if (teacherSocketId) {
-                io.to(teacherSocketId).emit('updateParticipants', getStudentsList());
-            }        
+            syncTeacherUI();
         }
         else {
             console.log(`El profesor le ha ${give ? 'dado' : 'quitado'} los permisos al estudiante ${participants[target].name}.`);
