@@ -22,22 +22,10 @@ const participants = {};    // Objeto: [socket.id] -> { name, role, hasPermissio
 const TEACHER_KEY = process.env.TEACHER_KEY;
 let teacherSocketId = null; // Se guardara el id del profesor para que solo haya uno
 
-function connectionTimeout(socket) {
-    // Para evitar inconsistencias eliminamos conexiones que no se hayan autenticado en 20 segundos
-    setTimeout(() => {
-        if (!participants[socket.id]) {
-            console.log(`Eliminando conexión no autenticada: ${socket.id}`);
-            socket.disconnect(true);
-        }
-    }, 20000);
-};
-
 io.on('connection', (socket) => {
     console.log(`Nueva conexión: ${socket.id}`);
-    connectionTimeout(socket);
 
     socket.on('joinRoom', ({ name, teacherKey }) => {
-        clearTimeout(connectionTimeout);
         // En primer lugar asignamos un rol al usuario
         const isTeacher = (teacherKey !== '' && teacherKey === TEACHER_KEY);
         const role = isTeacher ? 'profesor' : 'estudiante';
