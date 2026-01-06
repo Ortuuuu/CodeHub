@@ -14,7 +14,7 @@ function setTeacherSocketId(socketId) {
 }
 
 function addParticipant(socketId, name, role, hasPermission) {
-    participants[socketId] = { name, role, hasPermission };
+    participants[socketId] = { name, role, hasPermission, currentRoomId: null };
 }
 
 function removeParticipant(socketId) {
@@ -25,11 +25,18 @@ function getParticipant(socketId) {
     return participants[socketId];
 }
 
+function updateParticipantRoom(socketId, roomId) {
+    if (participants[socketId]) {
+        participants[socketId].currentRoomId = roomId;
+    }
+}
+
 module.exports = {
     getParticipants,
     getTeacherSocketId,
     setTeacherSocketId,
     addParticipant,
     removeParticipant,
-    getParticipant
+    getParticipant,
+    updateParticipantRoom
 };

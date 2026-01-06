@@ -6,6 +6,10 @@ const handleJoinRoom = require('./handlers/joinRoom');
 const handleDisconnect = require('./handlers/disconnect');
 const handleCodeChange = require('./handlers/codeChange');
 const handleTogglePermissions = require('./handlers/togglePermissions');
+const handleCreateRoom = require('./handlers/createRoom');
+const handleDeleteRoom = require('./handlers/deleteRoom');
+const handleLeaveRoom = require('./handlers/leaveRoom');
+const handleGetRooms = require('./handlers/getRooms');
 
 const app = express();
 const server = http.createServer(app);
@@ -27,4 +31,8 @@ io.on('connection', (socket) => {
     socket.on('disconnect', () => handleDisconnect(socket, io));
     socket.on('codeChange', (data) => handleCodeChange(socket, io, data));
     socket.on('togglePermissions', (data) => handleTogglePermissions(socket, io, data));
+    socket.on('createRoom', (data) => handleCreateRoom(socket, io, data));
+    socket.on('deleteRoom', (data) => handleDeleteRoom(socket, io, data));
+    socket.on('leaveRoom', () => handleLeaveRoom(socket, io));
+    socket.on('getRooms', () => handleGetRooms(socket, io));
 });

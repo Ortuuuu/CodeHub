@@ -11,7 +11,8 @@ function hideLoginMenu() {
 function getLoginCredentials() {
     return {
         name: document.getElementById('nameInput').value,
-        teacherKey: document.getElementById('teacherKeyInput').value
+        teacherKey: document.getElementById('teacherKeyInput').value,
+        roomId: document.getElementById('roomIdInput').value
     };
 }
 

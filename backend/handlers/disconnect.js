@@ -1,4 +1,5 @@
 const { getTeacherSocketId, setTeacherSocketId, getParticipant, removeParticipant } = require('../models/participants');
+const { removeParticipantFromRoom } = require('../models/rooms');
 const { syncTeacherUI } = require('../utils/helpers');
 
 function handleDisconnect(socket, io) {
@@ -14,11 +15,17 @@ function handleDisconnect(socket, io) {
         setTeacherSocketId(null);
         console.log("El usuario que se ha desconectado era el profesor.");
     }
+    
+    // Si el usuario estaba en una sala, eliminarlo de ahí
+    if (user.currentRoomId) {
+        removeParticipantFromRoom(user.currentRoomId, socket.id);
+        socket.leave(user.currentRoomId);
+        
+        // Actualizar la lista del profesor en esa sala
+        syncTeacherUI(io, user.currentRoomId);
+    }
 
     removeParticipant(socket.id);
-
-    // Actualizamos la lista del profesor
-    syncTeacherUI(io);
 }
 
 module.exports = handleDisconnect;

@@ -19,12 +19,29 @@
         <h2>Registro</h2>
         <input type="text" id="nameInput" placeholder="Nombre" required />
         <input type="password" id="teacherKeyInput" placeholder="Clave de profesor" />
+        <input type="text" id="roomIdInput" placeholder="ID de sala (solo estudiantes)" />
         <button id="joinBtn">Entrar</button>
     </div>
 
     <!-- Editor de código compartido -->
     <div id="editorContainer" class="hidden">
+        <div id="roomInfo" class="hidden">
+            <span id="roomName">Sala: </span>
+            <button id="leaveRoomBtn" class="hidden">Salir de la sala</button>
+        </div>
         <textarea id="codeEditor" disabled></textarea> 
+    </div>
+
+    <!-- Menú de gestión de salas (solo profesores) -->
+    <div id="roomsMenu" class="hidden">
+        <h2>Gestión de Salas</h2>
+        <div id="createRoomForm">
+            <input type="text" id="createRoomIdInput" placeholder="ID de la sala" required />
+            <input type="text" id="createRoomCodeInput" placeholder="Código (opcional)" />
+            <button id="createRoomBtn">Crear Sala</button>
+        </div>
+        <h3>Salas Existentes</h3>
+        <ul id="roomsList"></ul>
     </div>
 
     <!-- Menú de participantes  -->

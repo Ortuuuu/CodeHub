@@ -1,17 +1,19 @@
 import { socket } from '../config.js';
 import { showLoginMenu, hideLoginMenu } from '../ui/loginUI.js';
-import { showEditor, hideEditor, enableEditor, disableEditor, setEditorValue } from '../ui/editorUI.js';
+import { showEditor, hideEditor, enableEditor, disableEditor, setEditorValue, showRoomInfo, hideRoomInfo } from '../ui/editorUI.js';
 import { showParticipantsMenu, updateParticipantsList } from '../ui/participantsUI.js';
+import { showRoomsMenu, updateRoomsList, clearCreateRoomForm } from '../ui/roomsUI.js';
 
 function setupSocketEventsHandlers() {
     // Conexión o reconexión
     socket.on('connect', () => {
         const name = sessionStorage.getItem('name');
         const teacherKey = sessionStorage.getItem('teacherKey');
+        const roomId = sessionStorage.getItem('roomId');
 
         if (name) {
             console.log(`Reconectado al servidor con id: ${socket.id}`);
-            socket.emit('joinRoom', { name, teacherKey });
+            socket.emit('joinRoom', { name, teacherKey, roomId });
         } else {
             console.log(`Conectado al servidor con id: ${socket.id}`);
         }
@@ -38,14 +40,23 @@ function setupSocketEventsHandlers() {
 
         if (data.role === 'profesor') {
             hideLoginMenu();
+            showRoomsMenu();
             showParticipantsMenu();
             showEditor();
             enableEditor();
             updateParticipantsList(data.participants || []);
+            
+            // Solicitar lista de salas
+            socket.emit('getRooms');
         } 
         else if (data.role === 'estudiante') {
             hideLoginMenu();
             showEditor();
+            
+            // Mostrar información de la sala
+            if (data.roomId) {
+                showRoomInfo(data.roomId);
+            }
         }
         else {
             alert("Error: Rol desconocido recibido del servidor.");
@@ -53,8 +64,8 @@ function setupSocketEventsHandlers() {
     });
 
     // Actualización de participantes
-    socket.on('updateParticipants', (participants) => {
-        updateParticipantsList(participants);
+    socket.on('updateParticipants', (data) => {
+        updateParticipantsList(data.students);
     });
 
     // Sincronización del código en el editor por parte del servidor
@@ -70,6 +81,62 @@ function setupSocketEventsHandlers() {
         } else {
             disableEditor();
         }
+    });
+    
+    // Eventos de gestión de salas
+    socket.on('roomCreated', (data) => {
+        console.log('Sala creada:', data.room);
+        clearCreateRoomForm();
+        socket.emit('getRooms');
+    });
+    
+    socket.on('createRoomError', (data) => {
+        alert('Error al crear sala: ' + data.message);
+    });
+    
+    socket.on('roomsList', (data) => {
+        updateRoomsList(data.rooms);
+    });
+    
+    socket.on('roomsUpdated', () => {
+        socket.emit('getRooms');
+    });
+    
+    socket.on('roomDeleted', (data) => {
+        alert('La sala ' + data.roomId + ' ha sido eliminada por el profesor.');
+        hideEditor();
+        hideRoomInfo();
+        showLoginMenu();
+        
+        // Limpiar sessionStorage
+        sessionStorage.removeItem('name');
+        sessionStorage.removeItem('teacherKey');
+        sessionStorage.removeItem('roomId');
+    });
+    
+    socket.on('roomDeletedSuccess', (data) => {
+        console.log('Sala eliminada:', data.roomId);
+        socket.emit('getRooms');
+    });
+    
+    socket.on('deleteRoomError', (data) => {
+        alert('Error al eliminar sala: ' + data.message);
+    });
+    
+    socket.on('leftRoom', (data) => {
+        console.log('Saliste de la sala:', data.roomId);
+        hideEditor();
+        hideRoomInfo();
+        showLoginMenu();
+        
+        // Limpiar sessionStorage
+        sessionStorage.removeItem('name');
+        sessionStorage.removeItem('teacherKey');
+        sessionStorage.removeItem('roomId');
+    });
+    
+    socket.on('leaveRoomError', (data) => {
+        alert('Error al salir de la sala: ' + data.message);
     });
 }
 
