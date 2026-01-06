@@ -1,7 +1,7 @@
 const { TEACHER_KEY } = require('../config/constants');
 const { getTeacherSocketId, setTeacherSocketId, addParticipant, updateParticipantRoom, getParticipant } = require('../models/participants');
 const { getStudentsList, syncTeacherUI } = require('../utils/helpers');
-const { getRoomById, addParticipantToRoom, removeParticipantFromRoom } = require('../models/rooms');
+const { getRoomById, getRoomByCode, addParticipantToRoom, removeParticipantFromRoom } = require('../models/rooms');
 
 function handleJoinRoom(socket, io, { name, teacherKey, roomId }) {
     // En primer lugar asignamos un rol al usuario
@@ -14,22 +14,30 @@ function handleJoinRoom(socket, io, { name, teacherKey, roomId }) {
         return;
     }
     
-    // Validar que la sala exista (solo para estudiantes)
-    if (!isTeacher && roomId) {
-        const room = getRoomById(roomId);
+    // Buscar sala por roomId o por code
+    let room = null;
+    let actualRoomId = roomId;
+    
+    if (roomId) {
+        room = getRoomById(roomId);
         if (!room) {
-            socket.emit('joined', { error: "La sala no existe." });
-            return;
+            room = getRoomByCode(roomId);
+            if (room) {
+                actualRoomId = room.id;
+            }
         }
     }
     
+    // Validar que la sala exista (solo para estudiantes)
+    if (!isTeacher && roomId && !room) {
+        socket.emit('joined', { error: "La sala no existe." });
+        return;
+    }
+    
     // Validar que la sala exista para profesores si intentan entrar a una
-    if (isTeacher && roomId) {
-        const room = getRoomById(roomId);
-        if (!room) {
-            socket.emit('joined', { error: "La sala no existe." });
-            return;
-        }
+    if (isTeacher && roomId && !room) {
+        socket.emit('joined', { error: "La sala no existe." });
+        return;
     }
     
     // Manejamos el caso de que ya haya un profesor conectado
@@ -61,11 +69,11 @@ function handleJoinRoom(socket, io, { name, teacherKey, roomId }) {
     }
     
     // Añadir usuario a la sala si proporciona roomId
-    if (roomId) {
-        addParticipantToRoom(roomId, socket.id);
-        updateParticipantRoom(socket.id, roomId);
-        socket.join(roomId);
-        console.log(`${name} se ha unido a la sala ${roomId} como ${role}, con ID ${socket.id}`);
+    if (actualRoomId) {
+        addParticipantToRoom(actualRoomId, socket.id);
+        updateParticipantRoom(socket.id, actualRoomId);
+        socket.join(actualRoomId);
+        console.log(`${name} se ha unido a la sala ${actualRoomId} como ${role}, con ID ${socket.id}`);
     } else {
         console.log(`${name} se ha unido como ${role}, con ID ${socket.id} (sin sala asignada)`);
     }
@@ -77,25 +85,23 @@ function handleJoinRoom(socket, io, { name, teacherKey, roomId }) {
 
     if (role === 'profesor') {
         // Si es profesor, enviar lista de estudiantes de la sala si está en una
-        if (roomId) {
-            const room = getRoomById(roomId);
-            personalData.participants = getStudentsList(roomId);
-            personalData.roomId = roomId;
+        if (actualRoomId) {
+            personalData.participants = getStudentsList(actualRoomId);
+            personalData.roomId = actualRoomId;
             personalData.editorCode = room ? room.editorCode : "";
         } else {
             personalData.participants = [];
         }
     } else {
         // Si es estudiante, enviar el roomId de la sala a la que se unió
-        const room = getRoomById(roomId);
-        personalData.roomId = roomId;
+        personalData.roomId = actualRoomId;
         personalData.editorCode = room ? room.editorCode : "";
     }
     socket.emit('joined', personalData);
 
     // Acutalizamos la lista del profesor en la sala correspondiente
-    if (roomId) {
-        syncTeacherUI(io, roomId);
+    if (actualRoomId) {
+        syncTeacherUI(io, actualRoomId);
     }
 }
 

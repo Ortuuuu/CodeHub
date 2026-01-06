@@ -82,6 +82,16 @@ function updateRoomEditorCode(roomId, editorCode) {
     return true;
 }
 
+function getRoomByCode(code) {
+    for (const roomId in rooms) {
+        const room = rooms[roomId];
+        if (room.code && room.code === code) {
+            return room;
+        }
+    }
+    return null;
+}
+
 function getRoomBySocketId(socketId) {
     for (const roomId in rooms) {
         const room = rooms[roomId];
@@ -106,6 +116,7 @@ module.exports = {
     createRoom,
     deleteRoom,
     getRoomById,
+    getRoomByCode,
     addParticipantToRoom,
     removeParticipantFromRoom,
     updateRoomCode,
