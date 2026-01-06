@@ -1,7 +1,7 @@
 import { socket } from '../config.js';
 import { showLoginMenu, hideLoginMenu } from '../ui/loginUI.js';
 import { showEditor, hideEditor, enableEditor, disableEditor, setEditorValue, showRoomInfo, hideRoomInfo } from '../ui/editorUI.js';
-import { showParticipantsMenu, updateParticipantsList } from '../ui/participantsUI.js';
+import { showParticipantsMenu, hideParticipantsMenu, updateParticipantsList } from '../ui/participantsUI.js';
 import { showRoomsMenu, updateRoomsList, clearCreateRoomForm } from '../ui/roomsUI.js';
 
 function setupSocketEventsHandlers() {
@@ -41,10 +41,21 @@ function setupSocketEventsHandlers() {
         if (data.role === 'profesor') {
             hideLoginMenu();
             showRoomsMenu();
-            showParticipantsMenu();
-            showEditor();
-            enableEditor();
-            updateParticipantsList(data.participants || []);
+            
+            // Si el profesor entró a una sala, mostrar editor y participantes
+            if (data.roomId) {
+                showParticipantsMenu();
+                showEditor();
+                enableEditor();
+                updateParticipantsList(data.participants || []);
+                showRoomInfo(data.roomId);
+                sessionStorage.setItem('roomId', data.roomId);
+                
+                // Establecer el código actual del editor
+                if (data.editorCode) {
+                    setEditorValue(data.editorCode);
+                }
+            }
             
             // Solicitar lista de salas
             socket.emit('getRooms');
@@ -56,6 +67,11 @@ function setupSocketEventsHandlers() {
             // Mostrar información de la sala
             if (data.roomId) {
                 showRoomInfo(data.roomId);
+            }
+            
+            // Establecer el código actual del editor
+            if (data.editorCode) {
+                setEditorValue(data.editorCode);
             }
         }
         else {
@@ -103,15 +119,29 @@ function setupSocketEventsHandlers() {
     });
     
     socket.on('roomDeleted', (data) => {
-        alert('La sala ' + data.roomId + ' ha sido eliminada por el profesor.');
-        hideEditor();
-        hideRoomInfo();
-        showLoginMenu();
+        const teacherKey = sessionStorage.getItem('teacherKey');
         
-        // Limpiar sessionStorage
-        sessionStorage.removeItem('name');
-        sessionStorage.removeItem('teacherKey');
-        sessionStorage.removeItem('roomId');
+        if (teacherKey) {
+            // Si es profesor, solo ocultar editor y volver al menu de salas
+            console.log('Sala eliminada:', data.roomId);
+            hideEditor();
+            hideRoomInfo();
+            hideParticipantsMenu();
+            setEditorValue('');
+            showRoomsMenu();
+            sessionStorage.removeItem('roomId');
+            socket.emit('getRooms');
+        } else {
+            // Si es estudiante, volver al login
+            alert('La sala ' + data.roomId + ' ha sido eliminada por el profesor.');
+            hideEditor();
+            hideRoomInfo();
+            setEditorValue('');
+            showLoginMenu();
+            
+            sessionStorage.removeItem('name');
+            sessionStorage.removeItem('roomId');
+        }
     });
     
     socket.on('roomDeletedSuccess', (data) => {
@@ -127,12 +157,19 @@ function setupSocketEventsHandlers() {
         console.log('Saliste de la sala:', data.roomId);
         hideEditor();
         hideRoomInfo();
-        showLoginMenu();
+        hideParticipantsMenu();
+        setEditorValue('');
         
-        // Limpiar sessionStorage
-        sessionStorage.removeItem('name');
-        sessionStorage.removeItem('teacherKey');
-        sessionStorage.removeItem('roomId');
+        const teacherKey = sessionStorage.getItem('teacherKey');
+        if (teacherKey) {
+            showRoomsMenu();
+            sessionStorage.removeItem('roomId');
+            socket.emit('getRooms');
+        } else {
+            showLoginMenu();
+            sessionStorage.removeItem('name');
+            sessionStorage.removeItem('roomId');
+        }
     });
     
     socket.on('leaveRoomError', (data) => {

@@ -3,7 +3,8 @@
 //     roomId: {
 //         id: roomId,
 //         code: "ABC123",
-//         participantIds: [socketId1, socketId2, ...]
+//         participantIds: [socketId1, socketId2, ...],
+//         editorCode: ""
 //     }
 // }
 const rooms = {};
@@ -12,7 +13,8 @@ function createRoom(roomId, code = "") {
     rooms[roomId] = {
         id: roomId,
         code: code,
-        participantIds: []
+        participantIds: [],
+        editorCode: ""
     };
     return rooms[roomId];
 }
@@ -70,6 +72,16 @@ function updateRoomCode(roomId, newCode) {
     return true;
 }
 
+function updateRoomEditorCode(roomId, editorCode) {
+    const room = rooms[roomId];
+    if (!room) {
+        return false;
+    }
+    
+    room.editorCode = editorCode;
+    return true;
+}
+
 function getRoomBySocketId(socketId) {
     for (const roomId in rooms) {
         const room = rooms[roomId];
@@ -97,6 +109,7 @@ module.exports = {
     addParticipantToRoom,
     removeParticipantFromRoom,
     updateRoomCode,
+    updateRoomEditorCode,
     getRoomBySocketId,
     getAllRooms
 };

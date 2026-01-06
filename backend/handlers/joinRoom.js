@@ -15,7 +15,16 @@ function handleJoinRoom(socket, io, { name, teacherKey, roomId }) {
     }
     
     // Validar que la sala exista (solo para estudiantes)
-    if (!isTeacher) {
+    if (!isTeacher && roomId) {
+        const room = getRoomById(roomId);
+        if (!room) {
+            socket.emit('joined', { error: "La sala no existe." });
+            return;
+        }
+    }
+    
+    // Validar que la sala exista para profesores si intentan entrar a una
+    if (isTeacher && roomId) {
         const room = getRoomById(roomId);
         if (!room) {
             socket.emit('joined', { error: "La sala no existe." });
@@ -26,12 +35,12 @@ function handleJoinRoom(socket, io, { name, teacherKey, roomId }) {
     // Manejamos el caso de que ya haya un profesor conectado
     if (isTeacher) {
         const teacherSocketId = getTeacherSocketId();
-        if (teacherSocketId) {
+        if (teacherSocketId && teacherSocketId !== socket.id) {
             console.log("Otro profesor intentó unirse. RECHAZADO. Ya hay un profesor conectado.");
             socket.emit('joined', { error: "Ya hay un profesor en la sala." });
             return;
         }
-        else {
+        else if (!teacherSocketId) {
             setTeacherSocketId(socket.id);
         }
     }
@@ -51,8 +60,8 @@ function handleJoinRoom(socket, io, { name, teacherKey, roomId }) {
         console.log(`${name} salió de la sala ${oldRoomId}`);
     }
     
-    // Añadir usuario a la nueva sala (solo si es estudiante con roomId)
-    if (!isTeacher && roomId) {
+    // Añadir usuario a la sala si proporciona roomId
+    if (roomId) {
         addParticipantToRoom(roomId, socket.id);
         updateParticipantRoom(socket.id, roomId);
         socket.join(roomId);
@@ -67,16 +76,25 @@ function handleJoinRoom(socket, io, { name, teacherKey, roomId }) {
     const personalData = { role: role };
 
     if (role === 'profesor') {
-        // Si es profesor, enviar lista vacía inicialmente (no está en ninguna sala aún)
-        personalData.participants = [];
+        // Si es profesor, enviar lista de estudiantes de la sala si está en una
+        if (roomId) {
+            const room = getRoomById(roomId);
+            personalData.participants = getStudentsList(roomId);
+            personalData.roomId = roomId;
+            personalData.editorCode = room ? room.editorCode : "";
+        } else {
+            personalData.participants = [];
+        }
     } else {
         // Si es estudiante, enviar el roomId de la sala a la que se unió
+        const room = getRoomById(roomId);
         personalData.roomId = roomId;
+        personalData.editorCode = room ? room.editorCode : "";
     }
     socket.emit('joined', personalData);
 
     // Acutalizamos la lista del profesor en la sala correspondiente
-    if (role === 'estudiante' && roomId) {
+    if (roomId) {
         syncTeacherUI(io, roomId);
     }
 }

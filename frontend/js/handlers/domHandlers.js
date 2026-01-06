@@ -29,7 +29,8 @@ function setupDOMHandlers() {
     // Botón de revocar permisos
     document.getElementById('revokeAllBtn').onclick = () => {
         console.log("Eliminando permisos de todos los estudiantes");
-        socket.emit('togglePermissions', { target: 'all', give: false });
+        const roomId = sessionStorage.getItem('roomId');
+        socket.emit('togglePermissions', { target: 'all', give: false, roomId: roomId });
     };
 
     // Cuando el profesor le da permisos a un estudiante (clicándolo en el menú de participantes)
@@ -37,7 +38,7 @@ function setupDOMHandlers() {
         if (event.target && event.target.tagName === 'LI') {
             const studentId = event.target.dataset.id;
             const currentlyHasPermission = event.target.classList.contains('has-permission');
-            const roomId = event.target.dataset.roomId;
+            const roomId = sessionStorage.getItem('roomId');
 
             console.log(`Cambiando permisos del estudiante ${studentId}. Actualmente tiene permisos ${currentlyHasPermission}, y se van a establecer a ${!currentlyHasPermission}`);
             socket.emit('togglePermissions', { 
@@ -75,7 +76,7 @@ function setupDOMHandlers() {
             
             // Botón de entrar a sala
             if (target.classList.contains('enter-room-btn')) {
-                const roomId = target.getAttribute('data-room-id');
+                const roomId = target.dataset.roomId;
                 console.log('Entrando a sala:', roomId);
                 
                 const name = sessionStorage.getItem('name');
@@ -89,7 +90,7 @@ function setupDOMHandlers() {
             
             // Botón de eliminar sala
             if (target.classList.contains('delete-room-btn')) {
-                const roomId = target.getAttribute('data-room-id');
+                const roomId = target.dataset.roomId;
                 
                 if (confirm('¿Estás seguro de que quieres eliminar la sala "' + roomId + '"?')) {
                     console.log('Eliminando sala:', roomId);
