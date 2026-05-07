@@ -1,6 +1,6 @@
 import { socket } from '../config.js';
 import { getLoginCredentials, validateName } from '../ui/loginUI.js';
-import { getEditor, getEditorValue } from '../ui/editorUI.js';
+import { setLanguage, toggleTheme } from '../ui/editorUI.js';
 import { toggleStudentPermissionClass } from '../ui/participantsUI.js';
 import { getCreateRoomData } from '../ui/roomsUI.js';
 
@@ -20,11 +20,31 @@ function setupDOMHandlers() {
         sessionStorage.setItem('roomId', roomId || '');
     };
 
-    // Editor de código
-    const editor = getEditor();
-    editor.addEventListener('input', () => {
-        socket.emit('codeChange', { code: getEditorValue(), user: socket.id });
-    });
+    // Selector de lenguaje
+    const languageSelector = document.getElementById('languageSelector');
+    if (languageSelector) {
+        languageSelector.onchange = (event) => {
+            const language = event.target.value;
+            console.log('Cambiando lenguaje a:', language);
+            setLanguage(language);
+            
+            // Si es profesor, notificar al servidor para sincronizar
+            const teacherKey = sessionStorage.getItem('teacherKey');
+            if (teacherKey) {
+                const roomId = sessionStorage.getItem('roomId');
+                socket.emit('languageChange', { language, roomId });
+            }
+        };
+    }
+
+    // Botón de cambio de tema
+    const themeToggle = document.getElementById('themeToggle');
+    if (themeToggle) {
+        themeToggle.onclick = () => {
+            console.log('Cambiando tema');
+            toggleTheme();
+        };
+    }
 
     // Botón de revocar permisos
     document.getElementById('revokeAllBtn').onclick = () => {

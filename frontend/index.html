@@ -4,14 +4,9 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <!--
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs/loader.min.js" defer></script>
-    -->
-    <script src="http://localhost:3000/socket.io/socket.io.js"></script>
-    <script type="module" src="js/main.js"></script>
+    <script type="module" src="/js/main.js"></script>
     <title>CodeHub</title>
-    <link rel="stylesheet" href="styles.css" />
-
+    <link rel="stylesheet" href="/styles.css" />
 </head>
 <body>
     <!-- login -->
@@ -29,7 +24,20 @@
             <span id="roomName">Sala: </span>
             <button id="leaveRoomBtn" class="hidden">Salir de la sala</button>
         </div>
-        <textarea id="codeEditor" disabled></textarea> 
+        
+        <!-- Menú del editor -->
+        <div id="editorControls" class="hidden">
+            <select id="languageSelector">
+                <option value="c">C</option>
+                <option value="cpp">C++</option>
+                <option value="java">Java</option>
+                <option value="python">Python</option>
+            </select>
+            <button id="themeToggle" title="Cambiar tema">🌙</button>
+        </div>
+        
+        <!-- Editor de código -->
+        <div id="codeEditor"></div> 
     </div>
 
     <!-- Menú de gestión de salas (solo profesores) -->

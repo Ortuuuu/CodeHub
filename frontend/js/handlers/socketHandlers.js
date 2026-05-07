@@ -1,6 +1,6 @@
 import { socket } from '../config.js';
 import { showLoginMenu, hideLoginMenu } from '../ui/loginUI.js';
-import { showEditor, hideEditor, enableEditor, disableEditor, setEditorValue, showRoomInfo, hideRoomInfo } from '../ui/editorUI.js';
+import { showEditor, hideEditor, enableEditor, disableEditor, setEditorValue, showRoomInfo, hideRoomInfo, initializeEditor, showEditorControls, hideEditorControls, setLanguage } from '../ui/editorUI.js';
 import { showParticipantsMenu, hideParticipantsMenu, updateParticipantsList } from '../ui/participantsUI.js';
 import { showRoomsMenu, updateRoomsList, clearCreateRoomForm } from '../ui/roomsUI.js';
 
@@ -46,7 +46,16 @@ function setupSocketEventsHandlers() {
             if (data.roomId) {
                 showParticipantsMenu();
                 showEditor();
+                showEditorControls();
+                
+                // Inicializar CodeMirror si no está inicializado
+                initializeEditor((newContent) => {
+                    socket.emit('codeChange', { code: newContent, user: socket.id });
+                });
+                
+                // Habilitar editor después de inicializarlo
                 enableEditor();
+                
                 updateParticipantsList(data.participants || []);
                 showRoomInfo(data.roomId);
                 sessionStorage.setItem('roomId', data.roomId);
@@ -54,6 +63,16 @@ function setupSocketEventsHandlers() {
                 // Establecer el código actual del editor
                 if (data.editorCode) {
                     setEditorValue(data.editorCode);
+                }
+                
+                // Establecer el lenguaje
+                if (data.language) {
+                    setLanguage(data.language);
+                    // Actualizar el selector
+                    const selector = document.getElementById('languageSelector');
+                    if (selector) {
+                        selector.value = data.language;
+                    }
                 }
             }
             
@@ -63,6 +82,18 @@ function setupSocketEventsHandlers() {
         else if (data.role === 'estudiante') {
             hideLoginMenu();
             showEditor();
+            showEditorControls();
+            
+            // Inicializar CodeMirror si no está inicializado
+            initializeEditor((newContent) => {
+                socket.emit('codeChange', { code: newContent, user: socket.id });
+            });
+            
+            // Deshabilitar selector de lenguaje para estudiantes
+            const languageSelector = document.getElementById('languageSelector');
+            if (languageSelector) {
+                languageSelector.disabled = true;
+            }
             
             // Mostrar información de la sala
             if (data.roomId) {
@@ -72,6 +103,16 @@ function setupSocketEventsHandlers() {
             // Establecer el código actual del editor
             if (data.editorCode) {
                 setEditorValue(data.editorCode);
+            }
+            
+            // Establecer el lenguaje
+            if (data.language) {
+                setLanguage(data.language);
+                // Actualizar el selector (solo visual para estudiantes)
+                const selector = document.getElementById('languageSelector');
+                if (selector) {
+                    selector.value = data.language;
+                }
             }
         }
         else {
@@ -96,6 +137,17 @@ function setupSocketEventsHandlers() {
             enableEditor();
         } else {
             disableEditor();
+        }
+    });
+    
+    // Cambio de lenguaje sincronizado por el profesor
+    socket.on('languageChanged', (data) => {
+        console.log('Lenguaje cambiado a:', data.language);
+        setLanguage(data.language);
+        // Actualizar el selector
+        const selector = document.getElementById('languageSelector');
+        if (selector) {
+            selector.value = data.language;
         }
     });
     
@@ -125,6 +177,7 @@ function setupSocketEventsHandlers() {
             // Si es profesor, solo ocultar editor y volver al menu de salas
             console.log('Sala eliminada:', data.roomId);
             hideEditor();
+            hideEditorControls();
             hideRoomInfo();
             hideParticipantsMenu();
             setEditorValue('');
@@ -134,13 +187,23 @@ function setupSocketEventsHandlers() {
         } else {
             // Si es estudiante, volver al login
             alert('La sala ' + data.roomId + ' ha sido eliminada por el profesor.');
+            
+            // Limpiar el sessionStorage para evitar reconexiones automáticas
+            sessionStorage.clear();
+            
+            // Limpiar interfaz
             hideEditor();
+            hideEditorControls();
             hideRoomInfo();
             setEditorValue('');
+            
+            // Mostrar menú de login limpio
             showLoginMenu();
             
-            sessionStorage.removeItem('name');
-            sessionStorage.removeItem('roomId');
+            // Vaciar los campos del formulario
+            document.getElementById('nameInput').value = '';
+            document.getElementById('teacherKeyInput').value = '';
+            document.getElementById('roomIdInput').value = '';
         }
     });
     
@@ -156,6 +219,7 @@ function setupSocketEventsHandlers() {
     socket.on('leftRoom', (data) => {
         console.log('Saliste de la sala:', data.roomId);
         hideEditor();
+        hideEditorControls();
         hideRoomInfo();
         hideParticipantsMenu();
         setEditorValue('');
@@ -166,9 +230,16 @@ function setupSocketEventsHandlers() {
             sessionStorage.removeItem('roomId');
             socket.emit('getRooms');
         } else {
+            // Estudiante sale de la sala ->. limpiar todo
+            sessionStorage.clear();
+            
+            // Mostrar menú de login limpio
             showLoginMenu();
-            sessionStorage.removeItem('name');
-            sessionStorage.removeItem('roomId');
+            
+            // Vaciar los campos del formulario
+            document.getElementById('nameInput').value = '';
+            document.getElementById('teacherKeyInput').value = '';
+            document.getElementById('roomIdInput').value = '';
         }
     });
     

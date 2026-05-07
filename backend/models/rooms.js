@@ -4,7 +4,8 @@
 //         id: roomId,
 //         code: "ABC123",
 //         participantIds: [socketId1, socketId2, ...],
-//         editorCode: ""
+//         editorCode: "",
+//         language: "c"
 //     }
 // }
 const rooms = {};
@@ -14,7 +15,8 @@ function createRoom(roomId, code = "") {
         id: roomId,
         code: code,
         participantIds: [],
-        editorCode: ""
+        editorCode: "",
+        language: "c"  // lenguaje por defecto
     };
     return rooms[roomId];
 }
@@ -55,7 +57,7 @@ function removeParticipantFromRoom(roomId, socketId) {
     for (let i = 0; i < room.participantIds.length; i++) {
         if (room.participantIds[i] === socketId) {
             room.participantIds.splice(i, 1);
-            break;
+            break; 
         }
     }
     
@@ -79,6 +81,16 @@ function updateRoomEditorCode(roomId, editorCode) {
     }
     
     room.editorCode = editorCode;
+    return true;
+}
+
+function updateRoomLanguage(roomId, language) {
+    const room = rooms[roomId];
+    if (!room) {
+        return false;
+    }
+    
+    room.language = language;
     return true;
 }
 
@@ -121,6 +133,7 @@ module.exports = {
     removeParticipantFromRoom,
     updateRoomCode,
     updateRoomEditorCode,
+    updateRoomLanguage,
     getRoomBySocketId,
     getAllRooms
 };

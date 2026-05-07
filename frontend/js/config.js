@@ -1,3 +1,5 @@
+import { io } from 'socket.io-client';
+
 const CONFIG = {
     SERVER_URL: "http://localhost:3000"
 };

@@ -2,11 +2,23 @@ FROM node:18-slim
 
 WORKDIR /app
 
+# Copia archivos de configuración
+COPY frontend/package.json frontend/package-lock.json* ./
+
+# Instala dependencias
+RUN npm install
+
+# Copia código
 COPY frontend/. .
 
+# Construir la aplicación con Vite
+RUN npm run build
+
+# Instalar serve para servir archivos estáticos
 RUN npm install -g serve
 
 EXPOSE 80
 
-# Usamos -s . para servir un frontal SPA y -l 80 para escuchar en el puerto 80
-CMD ["serve", "-s", ".", "-l", "80"]
+# Usamos -s . para servir un frontal SPA y -l 80 para escuchar en el puerto 80.
+# Servir desde la carpeta dist generada por Vite
+CMD ["serve", "-s", "dist", "-l", "80"]

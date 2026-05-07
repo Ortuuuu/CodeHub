@@ -75,9 +75,5 @@ Los datos no persisten entre ejecuciones (no hay base de datos aún).
 
 El sistema prioriza baja latencia mediante WebSockets.
 
-Arquitectura simple, pensada para ser extendida:
-
-Persistencia con base de datos.
-
-Autenticación real y gestión segura de credenciales.
+Arquitectura simple, pensada para poder ser extendida con facilidad.
 ```

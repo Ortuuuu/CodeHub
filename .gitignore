@@ -6,18 +6,31 @@ yarn-error.log
 # Variables de entorno
 .env
 
+# Build de frontend (Esto se genera por Vite)
+frontend/dist/
+frontend/.vite/
+# por si acaso
+frontend/dist-ssr/
+backend/dist/
+backend/build/
+
 # Archivos del sistema
 .DS_Store
 Thumbs.db
+desktop.ini
+$RECYCLE.BIN/
+._*
 
 # Logs
 *.log
-
-# Docker
+logs/
 *.pid
 *.seed
-*.bak
-*.swp
 
-# Config de VSCode
+# Config de editores
 .vscode/
+*.code-workspace
+
+# Docker
+*.bak
+docker-compose.override.yml

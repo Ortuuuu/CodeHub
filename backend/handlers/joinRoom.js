@@ -89,6 +89,7 @@ function handleJoinRoom(socket, io, { name, teacherKey, roomId }) {
             personalData.participants = getStudentsList(actualRoomId);
             personalData.roomId = actualRoomId;
             personalData.editorCode = room ? room.editorCode : "";
+            personalData.language = room ? room.language : "c";
         } else {
             personalData.participants = [];
         }
@@ -96,6 +97,7 @@ function handleJoinRoom(socket, io, { name, teacherKey, roomId }) {
         // Si es estudiante, enviar el roomId de la sala a la que se unió
         personalData.roomId = actualRoomId;
         personalData.editorCode = room ? room.editorCode : "";
+        personalData.language = room ? room.language : "c";
     }
     socket.emit('joined', personalData);
 
