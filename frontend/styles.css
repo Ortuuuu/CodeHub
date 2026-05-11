@@ -149,6 +149,20 @@ body {
     border-color: #5b5fc7;
 }
 
+#downloadBtn {
+    padding: 8px 15px;
+    background: white;
+    border: 2px solid #ddd;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 20px;
+}
+
+#downloadBtn:hover {
+    background: #f8f8f8;
+    border-color: #5b5fc7;
+}
+
 /* editor de codigo */
 #codeEditor {
     background: white;

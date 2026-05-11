@@ -1,6 +1,6 @@
 import { socket } from '../config.js';
 import { getLoginCredentials, validateName } from '../ui/loginUI.js';
-import { setLanguage, toggleTheme } from '../ui/editorUI.js';
+import { setLanguage, toggleTheme, getEditorValue } from '../ui/editorUI.js';
 import { toggleStudentPermissionClass } from '../ui/participantsUI.js';
 import { getCreateRoomData } from '../ui/roomsUI.js';
 
@@ -43,6 +43,15 @@ function setupDOMHandlers() {
         themeToggle.onclick = () => {
             console.log('Cambiando tema');
             toggleTheme();
+        };
+    }
+
+    // Botón de descarga de código
+    const downloadBtn = document.getElementById('downloadBtn');
+    if (downloadBtn) {
+        downloadBtn.onclick = () => {
+            console.log('Descargando código');
+            downloadCode();
         };
     }
 
@@ -130,6 +139,49 @@ function setupDOMHandlers() {
             }
         };
     }
+}
+
+// Función para descargar el código del editor
+function downloadCode() {
+    const code = getEditorValue();
+    
+    // Obtenemos el lenguaje actual 
+    const languageSelector = document.getElementById('languageSelector');
+    const language = languageSelector ? languageSelector.value : 'c';
+    
+    // Seleccionamos la extension y el nombre del archivo (genérico de momento)
+    let extension = '.txt';
+    let filename = 'codigo';
+    
+    if (language === 'c') {
+        extension = '.c';
+        filename = 'codigo';
+    } else if (language === 'cpp') {
+        extension = '.cpp';
+        filename = 'codigo';
+    } else if (language === 'java') {
+        extension = '.java';
+        filename = 'Codigo'; // Java usa mayuscula inicial porque tiene que coincidir con la clase
+    } else if (language === 'python') {
+        extension = '.py';
+        filename = 'codigo';
+    }
+    
+    const fullFilename = filename + extension;
+    
+    // Creamos el archivo y lo descargamos
+    const blob = new Blob([code], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = fullFilename;
+    document.body.appendChild(a);
+    a.click();
+    
+    // Limpiamos estos elememntos temporales
+    document.body.removeChild(a);
+    console.log('Archivo descargado: ', fullFilename);
 }
 
 export { setupDOMHandlers };
