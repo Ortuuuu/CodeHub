@@ -149,6 +149,8 @@ function downloadCode() {
     const languageSelector = document.getElementById('languageSelector');
     const language = languageSelector ? languageSelector.value : 'c';
     
+    console.log('Lenguaje detectado:', language);
+    
     // Seleccionamos la extension y el nombre del archivo (genérico de momento)
     let extension = '.txt';
     let filename = 'codigo';
@@ -169,8 +171,20 @@ function downloadCode() {
     
     const fullFilename = filename + extension;
     
+    // Para evitar el bloqueo de la descarga del .py uso MIME específico en lugar de text/plain
+    let mimeType = 'text/plain';
+    if (language === 'c') {
+        mimeType = 'text/x-csrc';
+    } else if (language === 'cpp') {
+        mimeType = 'text/x-c++src';
+    } else if (language === 'java') {
+        mimeType = 'text/x-java-source';
+    } else if (language === 'python') {
+        mimeType = 'text/x-python';
+    }
+    
     // Creamos el archivo y lo descargamos
-    const blob = new Blob([code], { type: 'text/plain' });
+    const blob = new Blob([code], { type: mimeType });
     const url = URL.createObjectURL(blob);
     
     const a = document.createElement('a');
@@ -181,6 +195,8 @@ function downloadCode() {
     
     // Limpiamos estos elememntos temporales
     document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
     console.log('Archivo descargado: ', fullFilename);
 }
 
