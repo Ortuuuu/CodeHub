@@ -1,6 +1,6 @@
 import { socket } from '../config.js';
 import { getLoginCredentials, validateName } from '../ui/loginUI.js';
-import { setLanguage, toggleTheme, getEditorValue } from '../ui/editorUI.js';
+import { setLanguage, toggleTheme, getEditorValue, hideOutputPanel, setExecuteButtonLoading } from '../ui/editorUI.js';
 import { toggleStudentPermissionClass } from '../ui/participantsUI.js';
 import { getCreateRoomData } from '../ui/roomsUI.js';
 
@@ -52,6 +52,46 @@ function setupDOMHandlers() {
         downloadBtn.onclick = () => {
             console.log('Descargando código');
             downloadCode();
+        };
+    }
+    
+    // Botón de ejecutar el código
+    const executeBtn = document.getElementById('executeBtn');
+    if (executeBtn) {
+        executeBtn.onclick = () => {
+            console.log('Ejecutando código');
+            
+            const code = getEditorValue();
+            const languageSelector = document.getElementById('languageSelector');
+            const language = languageSelector.value;
+            const roomId = sessionStorage.getItem('roomId');
+            
+            console.log('--> roomId desde sessionStorage:', roomId);
+            console.log('--> code length:', code.length);
+            console.log('--> language:', language);
+            
+            if (!code || code.trim() === '') {
+                alert('No hay código para ejecutar');
+                return;
+            }
+            
+            if (!roomId) {
+                alert('Debes estar en una sala para ejecutar código');
+                return;
+            }
+            
+            setExecuteButtonLoading(true);
+            
+            socket.emit('executeCode', { code, language, roomId });
+        };
+    }
+    
+    // Botón de cerrar panel de salida
+    const closeOutputBtn = document.getElementById('closeOutput');
+    if (closeOutputBtn) {
+        closeOutputBtn.onclick = () => {
+            console.log('Cerrando panel de salida');
+            hideOutputPanel();
         };
     }
 

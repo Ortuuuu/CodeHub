@@ -34,3 +34,6 @@ logs/
 # Docker
 *.bak
 docker-compose.override.yml
+
+# Archivos temporales de ejecución de código
+temp/

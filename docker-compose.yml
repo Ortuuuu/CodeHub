@@ -7,8 +7,17 @@ services:
       - "3000:3000"
     env_file:
       - .env
+    environment:
+      # Ruta del host para bind mount en ejecutores (Docker-in-Docker)
+      - HOST_TEMP_PATH=${PWD}/temp
     networks:
       - collabnet
+    volumes:
+      # Montar socket de Docker para Docker-in-Docker
+      - /var/run/docker.sock:/var/run/docker.sock
+      # Bind mount a carpeta temp del proyecto
+      - ./temp:/shared-temp
+    privileged: true
 
   frontend:
     build:

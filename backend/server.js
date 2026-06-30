@@ -11,6 +11,7 @@ const handleDeleteRoom = require('./handlers/deleteRoom');
 const handleLeaveRoom = require('./handlers/leaveRoom');
 const handleGetRooms = require('./handlers/getRooms');
 const handleLanguageChange = require('./handlers/languageChange');
+const handleCodeExecution = require('./handlers/codeExecution');
 
 const app = express();
 const server = http.createServer(app);
@@ -37,4 +38,5 @@ io.on('connection', (socket) => {
     socket.on('leaveRoom', () => handleLeaveRoom(socket, io));
     socket.on('getRooms', () => handleGetRooms(socket, io));
     socket.on('languageChange', (data) => handleLanguageChange(socket, io, data));
+    socket.on('executeCode', (data) => handleCodeExecution(socket, io, data));
 });

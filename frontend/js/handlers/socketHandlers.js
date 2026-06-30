@@ -1,6 +1,6 @@
 import { socket } from '../config.js';
 import { showLoginMenu, hideLoginMenu } from '../ui/loginUI.js';
-import { showEditor, hideEditor, enableEditor, disableEditor, setEditorValue, showRoomInfo, hideRoomInfo, initializeEditor, showEditorControls, hideEditorControls, setLanguage } from '../ui/editorUI.js';
+import { showEditor, hideEditor, enableEditor, disableEditor, setEditorValue, showRoomInfo, hideRoomInfo, initializeEditor, showEditorControls, hideEditorControls, setLanguage, displayExecutionResult, setExecuteButtonLoading } from '../ui/editorUI.js';
 import { showParticipantsMenu, hideParticipantsMenu, updateParticipantsList } from '../ui/participantsUI.js';
 import { showRoomsMenu, updateRoomsList, clearCreateRoomForm } from '../ui/roomsUI.js';
 
@@ -245,6 +245,13 @@ function setupSocketEventsHandlers() {
     
     socket.on('leaveRoomError', (data) => {
         alert('Error al salir de la sala: ' + data.message);
+    });
+    
+    // Resultado dee la ejecución del código
+    socket.on('executionResult', (result) => {
+        console.log('Resultado de ejecución recibido:', result);
+        setExecuteButtonLoading(false);
+        displayExecutionResult(result);
     });
 }
 

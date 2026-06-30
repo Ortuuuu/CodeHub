@@ -33,12 +33,23 @@
                 <option value="java">Java</option>
                 <option value="python">Python</option>
             </select>
+            <button id="executeBtn" title="Ejecutar código">▶️ Ejecutar</button>
             <button id="themeToggle" title="Cambiar tema">🌙</button>
             <button id="downloadBtn" title="Descargar código">Descargar código</button>
         </div>
         
         <!-- Editor de código -->
         <div id="codeEditor"></div> 
+        
+        <!-- Panel de salida de las ejecuciones -->
+        <div id="outputPanel" class="hidden">
+            <div id="outputHeader">
+                <span>Salida</span>
+                <span id="executionTime"></span>
+                <button id="closeOutput" title="Cerrar panel">✖</button>
+            </div>
+            <pre id="outputContent"></pre>
+        </div>
     </div>
 
     <!-- Menú de gestión de salas (solo profesores) -->
