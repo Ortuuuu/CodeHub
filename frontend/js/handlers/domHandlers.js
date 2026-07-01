@@ -179,6 +179,18 @@ function setupDOMHandlers() {
             }
         };
     }
+    
+    // Botón para mostrar/ocultar barra de participantes
+    const toggleParticipantsBtn = document.getElementById('toggleParticipantsBtn');
+    const participantsBar = document.getElementById('participantsBar');
+    
+    if (toggleParticipantsBtn && participantsBar) {
+        toggleParticipantsBtn.onclick = () => {
+            const isHidden = participantsBar.classList.toggle('hidden');
+            toggleParticipantsBtn.textContent = isHidden ? 'Mostrar participantes' : 'Ocultar participantes';
+            console.log('Participantes:', isHidden ? 'ocultos' : 'visibles');
+        };
+    }
 }
 
 // Función para descargar el código del editor

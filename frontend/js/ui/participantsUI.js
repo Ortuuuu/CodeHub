@@ -1,9 +1,17 @@
 function showParticipantsMenu() {
-    document.getElementById('participantsMenu').classList.remove('hidden');
+    document.getElementById('participantsBar').classList.remove('hidden');
+    const toggleBtn = document.getElementById('toggleParticipantsBtn');
+    if (toggleBtn) {
+        toggleBtn.textContent = 'Ocultar participantes';
+    }
 }
 
 function hideParticipantsMenu() {
-    document.getElementById('participantsMenu').classList.add('hidden');
+    document.getElementById('participantsBar').classList.add('hidden');
+    const toggleBtn = document.getElementById('toggleParticipantsBtn');
+    if (toggleBtn) {
+        toggleBtn.textContent = 'Mostrar participantes';
+    }
 }
 
 function updateParticipantsList(students) {

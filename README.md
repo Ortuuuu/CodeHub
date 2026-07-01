@@ -338,9 +338,3 @@ docker run --rm -v "C:\Codehub\CodeHub\temp:/shared-temp:ro" c-executor sh -c "g
 - Rate limiting para ejecuciones de código
 - Logging de todas las ejecuciones
 - Sandboxing adicional (seccomp, AppArmor)
-
----
-
-## Licencia
-
-TFG - Trabajo de Fin de Grado

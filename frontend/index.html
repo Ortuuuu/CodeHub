@@ -36,10 +36,20 @@
             <button id="executeBtn" title="Ejecutar código">▶️ Ejecutar</button>
             <button id="themeToggle" title="Cambiar tema">🌙</button>
             <button id="downloadBtn" title="Descargar código">Descargar código</button>
+            <button id="toggleParticipantsBtn" class="hidden">Mostrar participantes</button>
         </div>
         
         <!-- Editor de código -->
-        <div id="codeEditor"></div> 
+        <div id="codeEditor"></div>
+        
+        <!-- Barra de participantes -->
+        <div id="participantsBar" class="hidden">
+            <div class="participants-header">
+                <span>Participantes</span>
+                <button id="revokeAllBtn">Quitar permisos a todos</button>
+            </div>
+            <div id="participantsList"></div>
+        </div> 
         
         <!-- Panel de salida de las ejecuciones -->
         <div id="outputPanel" class="hidden">
@@ -62,12 +72,6 @@
         </div>
         <h3>Salas Existentes</h3>
         <ul id="roomsList"></ul>
-    </div>
-
-    <!-- Menú de participantes  -->
-    <div id="participantsMenu" class="hidden">
-        <button id="revokeAllBtn">Quitar todos los permisos</button>
-        <ul id="participantsList"></ul>
     </div>
 </body>
 </html>

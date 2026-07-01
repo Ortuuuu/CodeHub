@@ -2,7 +2,7 @@ import { socket } from '../config.js';
 import { showLoginMenu, hideLoginMenu } from '../ui/loginUI.js';
 import { showEditor, hideEditor, enableEditor, disableEditor, setEditorValue, showRoomInfo, hideRoomInfo, initializeEditor, showEditorControls, hideEditorControls, setLanguage, displayExecutionResult, setExecuteButtonLoading } from '../ui/editorUI.js';
 import { showParticipantsMenu, hideParticipantsMenu, updateParticipantsList } from '../ui/participantsUI.js';
-import { showRoomsMenu, updateRoomsList, clearCreateRoomForm } from '../ui/roomsUI.js';
+import { showRoomsMenu, hideRoomsMenu, updateRoomsList, clearCreateRoomForm } from '../ui/roomsUI.js';
 
 function setupSocketEventsHandlers() {
     // Conexión o reconexión
@@ -44,9 +44,16 @@ function setupSocketEventsHandlers() {
             
             // Si el profesor entró a una sala, mostrar editor y participantes
             if (data.roomId) {
+                hideRoomsMenu();
                 showParticipantsMenu();
                 showEditor();
                 showEditorControls();
+                
+                // Mostrar botón de participantes solo a profesores
+                const toggleParticipantsBtn = document.getElementById('toggleParticipantsBtn');
+                if (toggleParticipantsBtn) {
+                    toggleParticipantsBtn.classList.remove('hidden');
+                }
                 
                 // Inicializar CodeMirror si no está inicializado
                 initializeEditor((newContent) => {
@@ -83,6 +90,12 @@ function setupSocketEventsHandlers() {
             hideLoginMenu();
             showEditor();
             showEditorControls();
+            
+            // Ocultar botón de participantes para estudiantes
+            const toggleParticipantsBtn = document.getElementById('toggleParticipantsBtn');
+            if (toggleParticipantsBtn) {
+                toggleParticipantsBtn.classList.add('hidden');
+            }
             
             // Inicializar CodeMirror si no está inicializado
             initializeEditor((newContent) => {
