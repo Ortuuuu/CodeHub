@@ -20,33 +20,34 @@ Esto creará 4 imágenes:
 
 ---
 
-## Arquitectura Docker-in-Docker
+## Arquitectura Docker-out-of-Docker (DooD)
 
-El sistema usa Docker-in-Docker (DinD) para ejecutar código:
+El sistema usa Docker-out-of-Docker (DooD) para ejecutar código:
 
 ```text
 [ Docker Host (Windows/WSL) ]
     │
     ├── codehub-backend (container)
-    │   ├── Monta: /var/run/docker.sock (acceso al Docker daemon del host)
+    │   ├── Monta: /var/run/docker.sock (acceso al daemon Docker del host)
     │   ├── Monta: ./temp:/shared-temp (archivos temporales)
     │   └── Ejecuta: docker run ... (crea contenedores hermanos)
     │
-    └── Ejecutores efímeros (containers)
+    └── Ejecutores efímeros (containers hermanos del backend)
         ├── python-executor (se crea y destruye por cada ejecución)
         ├── java-executor
         ├── c-executor
         └── cpp-executor
 ```
 
-**Ventajas:**
-- Mayor aislamiento de seguridad
+**Ventajas de DooD:**
+- Mayor eficiencia (comparte el daemon del host)
+- No requiere privilegios especiales en el backend
 - Fácil escalabilidad horizontal
 - Limpieza automática de recursos
 - Sin dependencias instaladas en el backend
 
 **Consideraciones:**
-- El backend necesita acceso al socket de Docker (`privileged: true`)
+- El backend necesita acceso al socket de Docker
 - Las rutas de volúmenes se convierten de Windows a WSL automáticamente
 - Los ejecutores montan `/shared-temp` en modo solo lectura
 
@@ -88,7 +89,6 @@ Cada contenedor ejecutor tiene las siguientes restricciones:
 - **RAM**: Máximo 128MB (`-m 128m`)
 - **CPU**: Máximo 1 core (`--cpus 1`)
 - **Timeout**: 5-10 segundos según lenguaje
-- **Sin swap**: Evita uso de memoria virtual
 
 ### Aislamiento de red
 - **Sin internet**: `--network none`
@@ -96,8 +96,8 @@ Cada contenedor ejecutor tiene las siguientes restricciones:
 - No puede acceder a servicios externos
 
 ### Sistema de archivos
-- **Código fuente**: Solo lectura (`/shared-temp/:ro`)
-- **Compilación/ejecución**: Solo `/tmp` es escribible
+- **Código fuente**: Solo lectura (`/shared-temp:ro`)
+- **Compilación/ejecución**: Solo `/tmp` es escribible (en memoria con `--tmpfs`)
 - Usuario sin privilegios (`USER coderunner`)
 - UID/GID 1000:1000 (no root)
 

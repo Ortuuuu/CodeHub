@@ -12,6 +12,25 @@ El **profesor** controla el editor de código y puede otorgar o revocar permisos
 - **Ejecución de código** en Python, Java, C y C++ de forma segura en contenedores Docker
 - **Salas de trabajo** con códigos de acceso opcionales
 - **Sincronización instantánea** mediante WebSockets
+- **Panel de participantes** visible solo para profesores con control de permisos individual
+
+### Roles de usuario:
+
+**Profesor:**
+- Accede con una clave especial (`teacherKey`)
+- Puede crear, gestionar y eliminar salas
+- Controla qué estudiantes pueden editar
+- Ve la barra de participantes y puede otorgar/revocar permisos
+- Puede ejecutar código siempre
+- Puede cambiar el lenguaje de programación
+
+**Estudiante:**
+- Accede solo con nombre y código de sala
+- Por defecto solo puede observar (modo lectura)
+- Puede editar solo si el profesor le otorga permisos
+- Puede ejecutar código si tiene permisos
+- No ve la lista de participantes
+- No puede cambiar el lenguaje (solo ver)
 
 ---
 
@@ -83,7 +102,13 @@ $env:PWD = (Get-Location).Path
 docker-compose up -d --build backend
 ```
 
-> **Nota:** Es necesario establecer `$env:PWD` antes de ejecutar `docker-compose up` para que los volúmenes se monten correctamente en el sistema Docker-in-Docker.
+**Reiniciar solo frontend:**
+```powershell
+$env:PWD = (Get-Location).Path
+docker-compose up -d --build frontend
+```
+
+> **Nota:** Es necesario establecer `$env:PWD` antes de ejecutar `docker-compose up` en Windows para que la conversión de rutas WSL funcione correctamente en el sistema DooD.
 
 ---
 
@@ -94,9 +119,13 @@ docker-compose up -d --build backend
 Interfaz web construida con Vite y CodeMirror 6 que incluye:
 
 - **Editor de código compartido** con resaltado de sintaxis para múltiples lenguajes
-- **Panel de participantes** con gestión de permisos
+- **Barra de participantes** (solo visible para profesores) en la parte inferior del editor
+  - Lista horizontal de participantes con indicador visual de permisos
+  - Click en participante para otorgar/revocar permisos
+  - Botón para revocar todos los permisos
+  - Botón de mostrar/ocultar integrado en controles del editor
 - **Botón de ejecución** para ejecutar código directamente desde el editor
-- **Panel de salida** que muestra resultados de ejecución
+- **Panel de salida** que muestra resultados de ejecución con tiempo de ejecución
 - Comunicación en tiempo real mediante **WebSockets (Socket.IO)**
 
 **Tecnologías:**
@@ -119,7 +148,7 @@ Servidor Node.js responsable de:
 - Node.js 18
 - Express 5
 - Socket.IO 4
-- Docker SDK (para Docker-in-Docker)
+- Docker CLI (para DooD - Docker-out-of-Docker)
 
 ### 3. **Ejecutores de Código**
 
@@ -136,7 +165,7 @@ Sistema de contenedores Docker para ejecutar código de forma segura:
 - Límite de CPU: 1 core
 - Timeout: 5-10 segundos según lenguaje
 - Usuario sin privilegios
-- Sistema de archivos de solo lectura (excepto /tmp)
+- Carpeta temporal en memoria (`--tmpfs /tmp`)
 
 > El servidor **no almacena datos de forma persistente**. Los datos se pierden al reiniciar la aplicación.
 
@@ -175,22 +204,30 @@ Sistema de contenedores Docker para ejecutar código de forma segura:
 9. Frontend muestra resultado en panel de salida
 ```
 
-### Arquitectura Docker-in-Docker
+### Arquitectura Docker-out-of-Docker (DooD)
 
 ```text
 [ Docker Host (Windows) ]
     │
     ├── Container: codehub-backend
-    │   ├── Monta: /var/run/docker.sock (acceso al Docker host)
+    │   ├── Monta: /var/run/docker.sock (acceso al daemon Docker del host)
     │   ├── Monta: ./temp:/shared-temp (archivos temporales)
-    │   └── Ejecuta: docker run ... (crea contenedores hermanos)
+    │   └── Ejecuta: docker run ... (crea contenedores hermanos, no hijos)
     │
     ├── Container: codehub-frontend
     │   └── Sirve: Archivos estáticos en puerto 8080
     │
-    └── Containers efímeros: python-executor, java-executor, c-executor, cpp-executor
+    └── Containers efímeros (hermanos del backend):
+        ├── python-executor
+        ├── java-executor  
+        ├── c-executor
+        └── cpp-executor
         └── Se crean y destruyen por cada ejecución de código
 ```
+
+**¿Qué es DooD?**
+
+Docker-out-of-Docker (DooD) es una técnica donde un contenedor usa el daemon Docker del host compartiendo el socket (`/var/run/docker.sock`). Los contenedores creados son **hermanos** del backend, no hijos. Esto es más eficiente que Docker-in-Docker (DinD) y no requiere privilegios especiales en el contenedor backend.
 
 ---
 
@@ -256,13 +293,14 @@ CodeHub/
 
 ## Consideraciones Técnicas
 
-### Docker-in-Docker
+### Docker-out-of-Docker (DooD)
 
-El backend necesita acceso al socket de Docker del host para crear contenedores ejecutores. Esto se logra mediante:
+El backend necesita acceso al daemon Docker del host para crear contenedores ejecutores. Esto se logra mediante:
 
 1. **Montaje del socket:** `/var/run/docker.sock:/var/run/docker.sock`
-2. **Modo privilegiado:** `privileged: true`
-3. **Conversión de rutas:** Las rutas de Windows se convierten automáticamente a formato WSL (`C:\...` → `/mnt/c/...`)
+2. **Conversión de rutas:** Las rutas de Windows se convierten automáticamente a formato WSL (`C:\...` → `/mnt/c/...`)
+
+**Nota:** A diferencia de DinD (Docker-in-Docker), no se necesita `privileged: true` porque solo se comparte el socket del daemon, no se ejecuta un daemon completo dentro del contenedor.
 
 ### Archivos Temporales
 
@@ -318,13 +356,23 @@ docker run --rm -v "C:\Codehub\CodeHub\temp:/shared-temp:ro" c-executor sh -c "g
 
 ## Seguridad
 
-### Ejecución de código
+### Ejecución de código (DooD)
 
-- Contenedores aislados sin acceso a red
-- Límites estrictos de recursos (CPU, RAM, tiempo)
-- Sin privilegios de root
-- Sistema de archivos de solo lectura
-- Archivos temporales eliminados después de cada ejecución
+**Aislamiento de contenedores:**
+- Sin acceso a red (`--network none`)
+- Límite de RAM: 128MB (`-m 128m`)
+- Límite de CPU: 1 core (`--cpus 1`)
+- Timeout: 5-10 segundos según lenguaje
+- Usuario sin privilegios (UID 1000, no root)
+- Código fuente montado en solo lectura
+- Carpeta `/tmp` temporal en memoria (`--tmpfs /tmp:exec`)
+- Archivos temporales eliminados inmediatamente después de cada ejecución
+
+**Arquitectura DooD:**
+- El backend comparte el socket del daemon Docker del host
+- Los contenedores ejecutores son hermanos del backend (no hijos)
+- No requiere `privileged: true` en el backend
+- Mayor eficiencia que Docker-in-Docker tradicional
 
 ### WebSockets
 
@@ -335,6 +383,6 @@ docker run --rm -v "C:\Codehub\CodeHub\temp:/shared-temp:ro" c-executor sh -c "g
 ### Consideraciones futuras
 
 - Implementar autenticación de usuarios
-- Rate limiting para ejecuciones de código
-- Logging de todas las ejecuciones
-- Sandboxing adicional (seccomp, AppArmor)
+- Historial de ejecuciones por sala
+- Límite de ejecuciones por minuto
+- Soporte para más lenguajes de programación

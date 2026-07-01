@@ -1,6 +1,6 @@
 function showLoginMenu() {
     document.getElementById('loginMenu').classList.remove('hidden');
-    document.getElementById('participantsMenu').classList.add('hidden');
+    document.getElementById('participantsBar').classList.add('hidden');
     document.getElementById('editorContainer').classList.add('hidden');
 }
 

@@ -1,7 +1,7 @@
 import { socket } from '../config.js';
 import { showLoginMenu, hideLoginMenu } from '../ui/loginUI.js';
 import { showEditor, hideEditor, enableEditor, disableEditor, setEditorValue, showRoomInfo, hideRoomInfo, initializeEditor, showEditorControls, hideEditorControls, setLanguage, displayExecutionResult, setExecuteButtonLoading } from '../ui/editorUI.js';
-import { showParticipantsMenu, hideParticipantsMenu, updateParticipantsList } from '../ui/participantsUI.js';
+import { showParticipantsBar, hideParticipantsBar, updateParticipantsList } from '../ui/participantsUI.js';
 import { showRoomsMenu, hideRoomsMenu, updateRoomsList, clearCreateRoomForm } from '../ui/roomsUI.js';
 
 function setupSocketEventsHandlers() {
@@ -45,7 +45,7 @@ function setupSocketEventsHandlers() {
             // Si el profesor entró a una sala, mostrar editor y participantes
             if (data.roomId) {
                 hideRoomsMenu();
-                showParticipantsMenu();
+                showParticipantsBar();
                 showEditor();
                 showEditorControls();
                 
@@ -192,7 +192,7 @@ function setupSocketEventsHandlers() {
             hideEditor();
             hideEditorControls();
             hideRoomInfo();
-            hideParticipantsMenu();
+            hideParticipantsBar();
             setEditorValue('');
             showRoomsMenu();
             sessionStorage.removeItem('roomId');
@@ -234,7 +234,7 @@ function setupSocketEventsHandlers() {
         hideEditor();
         hideEditorControls();
         hideRoomInfo();
-        hideParticipantsMenu();
+        hideParticipantsBar();
         setEditorValue('');
         
         const teacherKey = sessionStorage.getItem('teacherKey');

@@ -1,4 +1,4 @@
-function showParticipantsMenu() {
+function showParticipantsBar() {
     document.getElementById('participantsBar').classList.remove('hidden');
     const toggleBtn = document.getElementById('toggleParticipantsBtn');
     if (toggleBtn) {
@@ -6,7 +6,7 @@ function showParticipantsMenu() {
     }
 }
 
-function hideParticipantsMenu() {
+function hideParticipantsBar() {
     document.getElementById('participantsBar').classList.add('hidden');
     const toggleBtn = document.getElementById('toggleParticipantsBtn');
     if (toggleBtn) {
@@ -36,4 +36,4 @@ function toggleStudentPermissionClass(studentElement) {
     studentElement.classList.toggle('has-permission');
 }
 
-export { showParticipantsMenu, hideParticipantsMenu, updateParticipantsList, toggleStudentPermissionClass };
+export { showParticipantsBar, hideParticipantsBar, updateParticipantsList, toggleStudentPermissionClass };

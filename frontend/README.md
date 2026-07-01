@@ -143,3 +143,41 @@ Todos los usuarios de la sala ven el mismo resultado, promoviendo la colaboraci�
 - `js/ui/editorUI.js`: Funciones `displayExecutionResult()`, `setExecuteButtonLoading()`
 - `index.html`: Estructura HTML del botón y panel
 - `styles.css`: Estilos del panel de salida
+
+---
+
+## Gestión de Participantes (Solo Profesores)
+
+### Interfaz de usuario
+
+La barra de participantes solo es visible para el profesor y se encuentra integrada debajo del editor:
+
+**Componentes:**
+- **Botón "Mostrar/Ocultar participantes"**: En la barra de controles del editor
+  - Siempre visible en la misma posición (no se mueve)
+  - Cambia de texto según el estado
+  - Solo visible para profesores
+- **Barra de participantes**: Debajo del editor
+  - Lista horizontal de participantes como badges
+  - Fondo gris claro integrado con el diseño
+  - Header con título y botón "Quitar permisos a todos"
+  - Click en participante para otorgar/revocar permisos individual
+
+### Estados visuales
+
+**Participantes sin permisos:**
+- Fondo blanco con borde gris
+- Solo pueden observar el código
+
+**Participantes con permisos:**
+- Fondo verde claro (#d4edda)
+- Borde verde (#28a745)
+- Pueden editar y ejecutar código
+
+### Archivos relacionados
+
+- `js/ui/participantsUI.js`: Funciones para mostrar/ocultar barra y actualizar lista
+- `js/handlers/domHandlers.js`: Eventos de click en participantes y botón toggle
+- `js/handlers/socketHandlers.js`: Lógica de visibilidad según rol (profesor/estudiante)
+- `index.html`: Estructura HTML de la barra
+- `styles.css`: Estilos de la barra horizontal

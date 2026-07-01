@@ -12,7 +12,7 @@ No puedo ejecutar código directamente en el servidor porque:
 - Podría leer archivos del sistema
 - Podría instalar cosas raras
 
-**Solución:** Usar Docker containers aislados que se crean y destruyen para cada ejecución.
+**Solución:** Usar contenedores Docker aislados que se crean y destruyen para cada ejecución mediante Docker-out-of-Docker (DooD).
 
 ## Flujo básico
 
@@ -86,11 +86,12 @@ Cada lenguaje tendrá su propia imagen con:
 
 Para cada ejecución:
 - Timeout: 5-10 segundos max
-- Memoria: 128MB max
-- CPU: 1 core
-- Sin acceso a red (--network none)
-- Sistema de archivos de solo lectura excepto /tmp
-- Usuario sin privilegios
+- Memoria: 128MB max (`-m 128m`)
+- CPU: 1 core (`--cpus 1`)
+- Sin acceso a red (`--network none`)
+- Carpeta temporal en memoria (`--tmpfs /tmp:exec`)
+- Usuario sin privilegios (UID 1000)
+- Archivos de código en modo solo lectura
 
 ## Manejo de errores
 
