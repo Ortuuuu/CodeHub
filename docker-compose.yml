@@ -8,16 +8,16 @@ services:
     env_file:
       - .env
     environment:
-      # Ruta del host para bind mount en ejecutores (Docker-in-Docker)
+      # Ruta del host para bind mount en ejecutores (DooD)
       - HOST_TEMP_PATH=${PWD}/temp
     networks:
       - collabnet
     volumes:
-      # Montar socket de Docker para Docker-in-Docker
+      # Montar socket de Docker para DooD
       - /var/run/docker.sock:/var/run/docker.sock
       # Bind mount a carpeta temp del proyecto
       - ./temp:/shared-temp
-    privileged: true
+    # privileged: true --> Necesario para DiD no para DooD
 
   frontend:
     build:

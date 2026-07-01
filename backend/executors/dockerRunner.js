@@ -32,14 +32,15 @@ function runDockerContainer(imageName, timeout = 5000, codeFile = '/shared-temp/
         
         const volumeMount = `${hostTempPath}:/shared-temp:ro`;
         
-        // límites de seguridad que se aplicaran en el docker run
+        // límites de seguridad que se aplicaran al contenedor ejecutor (DooD)
         const dockerArgs = [
             'run',
-            '--rm',                    // eliminar contenedor al terminar
-            '--network', 'none',       // no acceso internet
-            '-m', '128m',              // max 128MB de RAM
-            '--cpus', '1',             // max 1 CPU
-            '-v', volumeMount,         // montar carpeta temporal del host
+            '--rm',
+            '--network', 'none',  // no acceso a internet
+            '-m', '128m',         // max 128MB de RAM
+            '--cpus', '1',        // max 1 CPU
+            '-v', volumeMount,    // montar carpeta temporal del host
+            '--tmpfs', '/tmp:exec',  // Carpeta temporal en memoria (:exec para permitir ejecutar)
             imageName,
             'sh', '-c', cmd            // ejecutar comando personalizado
         ];
